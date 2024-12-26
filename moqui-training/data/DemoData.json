@@ -1,19 +1,30 @@
 [
   {
+
+
+  "_dataType": "demo"
+  },
+
+  {
+    "_entity": "MoquiTraining",
     "trainingId": "1",
     "trainingName": "Java Basics",
     "trainingDate": "2024-01-15",
     "trainingPrice": 199.99,
     "trainingDuration": 5
   },
+
   {
+    "_entity": "MoquiTraining",
     "trainingId": "2",
     "trainingName": "Advanced SQL",
     "trainingDate": "2024-01-20",
     "trainingPrice": 299.99,
     "trainingDuration": 8
   },
+
   {
+    "_entity": "MoquiTraining",
     "trainingId": "3",
     "trainingName": "Machine Learning 101",
     "trainingDate": "2024-01-25",

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+
+    <service verb="create" noun="MoquiTraining" type="entity-auto">
+        <in-parameters>
+            <auto-parameters entity-name="tutorial.MoquiTraining" include="nonpk"/>
+            <parameter name="trainingName" required="true"/>
+            <parameter name="trainingDate" required="true"/>
+            <parameter name="trainingPrice"/>
+            <parameter name="trainingDuration"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="trainingId"/>
+        </out-parameters>
+        <actions>
+            <service-call name="create#tutorial.MoquiTraining" in-map="context + [trainingName:trainingName, trainingDate:trainingDate, trainingPrice:trainingPrice, trainingDuration:trainingDuration]"
+                          out-map="context"/>
+
+            <if condition="trainingName">
+                <service-call name="create#tutorial.MoquiTrainingAdditionalService" in-map="[trainingId:trainingId]"/>
+            </if>
+        </actions>
+    </service>
+
+    <service verb="create" noun="MoquiTrainingInline" >
+        <in-parameters>
+            <auto-parameters entity-name= "tutorial.MoquiTraining">
+            </auto-parameters>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="trainingId"/>
+        </out-parameters>
+        <actions>
+            <service-call name="create#MoquiTraining" in-map="context"  out-map="context"/>
+        </actions>
+    </service>
+
+    <service verb="create" noun="MoquiTrainingGroovy" type="script"
+             location="component://moqui-training/service/Train.groovy">
+        <in-parameters>
+            <auto-parameters entity-name="MoquiTraining" include="nonpk"/>
+            <parameter name="trainingName" required="true" />
+        </in-parameters>
+        <out-parameters>
+            <parameter name="trainingId"/>
+        </out-parameters>
+    </service>
+
+    <service verb="find" noun="MoquiTraining" >
+
+        <in-parameters>
+            <parameter name="trainingId" required="true"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="trainingRecord"/>
+        </out-parameters>
+        <actions>
+            <!-- Find the record by trainingId -->
+            <entity-find-one entity-name="tutorial.MoquiTraining" value-field="trainingRecord">
+            </entity-find-one>
+
+        </actions>
+
+    </service>
+
+<!--    <service verb="store" noun="SoreMoquiTraining">-->
+<!--        <actions>-->
+<!--            <entity-store entity-name="tutorial.MoquiTraining"/>-->
+<!--        </actions>-->
+
+<!--    </service>-->
+</services>
+
