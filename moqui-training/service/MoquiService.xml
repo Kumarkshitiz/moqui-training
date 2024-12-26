@@ -63,11 +63,82 @@
 
     </service>
 
-<!--    <service verb="store" noun="SoreMoquiTraining">-->
-<!--        <actions>-->
-<!--            <entity-store entity-name="tutorial.MoquiTraining"/>-->
-<!--        </actions>-->
+<!--        <service verb="store" noun="MoquiTrainingCheckCreate" >-->
 
-<!--    </service>-->
+<!--        <in-parameters>-->
+<!--            <auto-parameters entity-name="MoquiTraining">-->
+<!--            </auto-parameters>-->
+<!--            <parameter name="trainingId"/>-->
+<!--            <parameter name="trainingName" required="true"/>-->
+<!--            <parameter name="trainingDate" required="true"/>-->
+<!--            <parameter name="trainingPrice"/>-->
+<!--            <parameter name="trainingDuration"/>-->
+<!--        </in-parameters>-->
+<!--        <out-parameters>-->
+<!--            <parameter name="trainingId"/>-->
+<!--        </out-parameters>-->
+<!--        <actions>-->
+<!--            &lt;!&ndash; Check if the trainingId exists &ndash;&gt;-->
+<!--            <entity-find-one entity-name="tutorial.MoquiTraining" value-field="existingRecord">-->
+<!--            </entity-find-one>-->
+
+<!--            &lt;!&ndash; Update all fields if trainingId exists &ndash;&gt;-->
+<!--            <if condition="existingRecord">-->
+<!--                <then>-->
+<!--                <set field="existingRecord.trainingName" from="trainingName"/>-->
+<!--                <set field="existingRecord.trainingDate" from="trainingDate"/>-->
+<!--                <set field="existingRecord.trainingPrice" from="trainingPrice"/>-->
+<!--                <set field="existingRecord.trainingDuration" from="trainingDuration"/>-->
+<!--                <entity-update value-field="existingRecord"/>-->
+<!--                <set field="trainingId" from="existingRecord.trainingId"/>-->
+<!--                </then>-->
+<!--            </if>-->
+
+<!--            &lt;!&ndash; Call create service if trainingId does not exist &ndash;&gt;-->
+<!--            <else>-->
+<!--                <service-call name="create#tutorial.MoquiTraining"-->
+<!--                              in-map="[trainingName:trainingName, trainingDate:trainingDate, trainingPrice:trainingPrice, trainingDuration:trainingDuration]"-->
+<!--                              out-map="[trainingId:trainingId]"/>-->
+<!--            </else>-->
+<!--        </actions>-->
+<!--        </service>-->
+
+    <service verb="store" noun="MoquiTrainingUpdate">
+        <description>Create or update MoquiTraining records based on trainingName or trainingId.</description>
+
+        <in-parameters>
+            <!--            <parameter name="trainingId"/> &lt;!&ndash; Optional: ID to update an existing record &ndash;&gt;-->
+            <parameter name="trainingName" required="true"/> <!-- Required: Name of the training session -->
+            <parameter name="trainingDate" required="true"/> <!-- Required: Date of the training session -->
+            <auto-parameters entity-name="MoquiTraining" include="nonpk"/> <!-- Include other non-primary key fields -->
+        </in-parameters>
+
+        <out-parameters>
+            <parameter name="trainingId"/> <!-- Output parameter for the ID of the training record -->
+        </out-parameters>
+
+        <actions>
+
+            <!-- If record exists, update it -->
+            <if condition="existingRecord">
+                <then>
+                    <!-- Update fields from context -->
+                    <set field="existingRecord.trainingDate" from="trainingDate"/>
+                    <set field="existingRecord.trainingName" from="trainingName"/>
+                    <set field="existingRecord.trainingPrice" from="trainingPrice"/>
+                    <set field="existingRecord.trainingDuration" from="trainingDuration"/>
+                    <!-- Update the existing record -->
+                    <entity-update value-field="existingRecord"/>
+
+                    <!-- Set output parameter to return updated training ID -->
+                    <set field="trainingId" from="existingRecord.trainingId"/>
+                </then>
+                <else>
+                    <service-call name="create#MoquiTraining" in-map="context" out-map="context"/>
+                </else>
+            </if>
+
+        </actions>
+    </service>
 </services>
 
