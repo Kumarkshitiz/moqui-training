@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/rest-api-3.xsd"
+          name="moqui" displayName="Moqui Tools REST API" version="${moqui_version}"
+          description="Services for various system administration and other tools in Moqui Framework. See more information
+            about Moqui Framework at [http://www.moqui.org/framework](http://www.moqui.org/framework/index.html)">
+
+<!--        Product APIs-->
+        <resource name="ProductAPI" description="Basic CRUD Operations" require-authentication="anonymous-all">
+            <method type="post"><entity name="Product" operation="create"/></method>
+
+
+            <id name="productId">
+                <method type="get"><entity name="Product" operation="one"/></method>
+                <method type="delete"><entity name="Product" operation="delete"/></method>
+                <method type="put">
+                    <entity name="Product" operation="update"/>
+                </method>
+            </id>
+        </resource>
+
+<!--        Party APIs-->
+    <resource name="PartyAPI" description="Basic CRUD Operations" require-authentication="anonymous-all">
+        <method type="post"><entity name="Party" operation="create"/></method>
+        <method type="get"><entity name="Party" operation="one"/></method>
+
+        <id name="partyId">
+            <method type="delete"><entity name="Party" operation="delete"/></method>
+            <method type="put">
+                <entity name="Party" operation="update"/>
+            </method>
+
+            <resource name="contact" >
+                <method type="post"><entity name="ContactMech" operation="create"/></method>
+                <method type="get"><entity name="ContactMech" operation="one"/></method>
+                <id name="contactMechId">
+                    <method type="delete"><entity name="ContactMech" operation="delete"/></method>
+                    <method type="put">
+                        <entity name="ContactMech" operation="update"/>
+                    </method>
+                </id>
+            </resource>
+        </id>
+    </resource>
+
+<!--    Order related APIs-->
+    <resource name="OrderAPI" description="All Order related Operations" require-authentication="anonymous-all">
+        <id name="orderId">
+            <method type="get"><entity name="OrderHeader" operation="one"/></method>
+            <resource name="Add">
+                <method type="post">
+                    <service name="MoquiService.add#OrderItem"/>
+                </method>
+            </resource>
+        </id>
+        <resource name="Create">
+            <method type="post">
+                <service name="MoquiService.create#Order"/>
+            </method>
+        </resource>
+        <resource name="Delete">
+            <method type="delete">
+                <service name="MoquiService.delete#Order"/>
+            </method>
+        </resource>
+<!--        <resource name="Update">-->
+<!--            <method type="patch">-->
+<!--                <service name="update#Order"/>-->
+<!--            </method>-->
+<!--        </resource>-->
+<!--        <resource name="Get">-->
+<!--            <method type="get">-->
+<!--            <service name="get#Order"/>-->
+<!--            </method>-->
+<!--        </resource>-->
+
+
+    </resource>
+
+</resource>

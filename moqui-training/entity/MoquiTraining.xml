@@ -8,5 +8,64 @@
                 <field name="trainingDate" type="date"/>
                 <field name="trainingPrice" type="number-decimal"/>
                 <field name="trainingDuration" type="number-integer"/>
-            </entity>
+        </entity>
+
+        <entity entity-name="Party" package="tutorial">
+            <field name="partyId" type="text-short"   is-pk="true"/>
+            <field name="partyType" type="text-medium" not-null="true"/>
+            <field name="firstName" type="text-medium"/>
+            <field name="lastName"  type="text-medium"/>
+
+        </entity>
+
+        <entity entity-name="ContactMech" package="tutorial">
+            <field name="contactMechId" type="text-short" is-pk="true"/>
+            <field name="partyId" type="text-short" />
+            <field name="streetAddress" type="text-medium" not-null="true"/>
+            <field name="city" type="text-medium"/>
+            <field name="state" type="text-medium"/>
+            <field name="postalcode" type="text-medium"/>
+            <relationship type="one" related="Party" title="PartyContactMech">
+                <key-map field-name="partyId" related="partyId"/>
+            </relationship>
+        </entity>
+
+        <entity entity-name="Product" package="tutorial">
+            <field name="productId" type="text-short" is-pk="true"/>
+            <field name="productName" type="text-medium" not-null="true"/>
+            <field name="color" type="text-medium"/>
+            <field name="size" type="text-medium"/>
+        </entity>
+
+    <entity entity-name="OrderHeader" package="tutorial">
+        <field name="orderId" type="id" is-pk="true"/>
+        <field name="orderDate" type="date" not-null="true"/>
+        <field name="partyId" type="text-short"/>
+        <field name="shippingContactMechId" type="text-short"/>
+        <field name="billingContactMechId" type="text-short"/>
+        <relationship type="one" related="Party" title="OrderParty">
+            <key-map field-name="partyId" related="partyId"/>
+        </relationship>
+        <relationship type="one" related="ContactMech" title="ShippingContactMech">
+            <key-map field-name="shippingContactMechId" related="contactMechId"/>
+        </relationship>
+        <relationship type="one" related="ContactMech" title="BillingContactMech">
+            <key-map field-name="billingContactMechId" related="contactMechId"/>
+        </relationship>
+    </entity>
+
+    <entity entity-name="OrderItem" package="tutorial">
+        <field name="orderItemSeqId" type="text-short" is-pk="true"/>
+        <field name="orderId" type="text-short"/>
+        <field name="productId" type="text-short"/>
+        <field name="quantity" type="number-integer" not-null="true"/>
+        <field name="status" type="text-medium"/>
+        <relationship type="one" related="OrderHeader" title="OrderItemOrder">
+            <key-map field-name="orderId" related="orderId"/>
+        </relationship>
+        <relationship type="one" related="Product" title="OrderItemProduct">
+            <key-map field-name="productId" related="productId"/>
+        </relationship>
+    </entity>
+
     </entities>

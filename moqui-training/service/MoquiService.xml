@@ -12,14 +12,6 @@
         <out-parameters>
             <parameter name="trainingId"/>
         </out-parameters>
-        <actions>
-            <service-call name="create#tutorial.MoquiTraining" in-map="context + [trainingName:trainingName, trainingDate:trainingDate, trainingPrice:trainingPrice, trainingDuration:trainingDuration]"
-                          out-map="context"/>
-
-            <if condition="trainingName">
-                <service-call name="create#tutorial.MoquiTrainingAdditionalService" in-map="[trainingId:trainingId]"/>
-            </if>
-        </actions>
     </service>
 
     <service verb="create" noun="MoquiTrainingInline" >
@@ -55,69 +47,27 @@
             <parameter name="trainingRecord"/>
         </out-parameters>
         <actions>
-            <!-- Find the record by trainingId -->
             <entity-find-one entity-name="tutorial.MoquiTraining" value-field="trainingRecord">
             </entity-find-one>
-
         </actions>
-
     </service>
-
-<!--        <service verb="store" noun="MoquiTrainingCheckCreate" >-->
-
-<!--        <in-parameters>-->
-<!--            <auto-parameters entity-name="MoquiTraining">-->
-<!--            </auto-parameters>-->
-<!--            <parameter name="trainingId"/>-->
-<!--            <parameter name="trainingName" required="true"/>-->
-<!--            <parameter name="trainingDate" required="true"/>-->
-<!--            <parameter name="trainingPrice"/>-->
-<!--            <parameter name="trainingDuration"/>-->
-<!--        </in-parameters>-->
-<!--        <out-parameters>-->
-<!--            <parameter name="trainingId"/>-->
-<!--        </out-parameters>-->
-<!--        <actions>-->
-<!--            &lt;!&ndash; Check if the trainingId exists &ndash;&gt;-->
-<!--            <entity-find-one entity-name="tutorial.MoquiTraining" value-field="existingRecord">-->
-<!--            </entity-find-one>-->
-
-<!--            &lt;!&ndash; Update all fields if trainingId exists &ndash;&gt;-->
-<!--            <if condition="existingRecord">-->
-<!--                <then>-->
-<!--                <set field="existingRecord.trainingName" from="trainingName"/>-->
-<!--                <set field="existingRecord.trainingDate" from="trainingDate"/>-->
-<!--                <set field="existingRecord.trainingPrice" from="trainingPrice"/>-->
-<!--                <set field="existingRecord.trainingDuration" from="trainingDuration"/>-->
-<!--                <entity-update value-field="existingRecord"/>-->
-<!--                <set field="trainingId" from="existingRecord.trainingId"/>-->
-<!--                </then>-->
-<!--            </if>-->
-
-<!--            &lt;!&ndash; Call create service if trainingId does not exist &ndash;&gt;-->
-<!--            <else>-->
-<!--                <service-call name="create#tutorial.MoquiTraining"-->
-<!--                              in-map="[trainingName:trainingName, trainingDate:trainingDate, trainingPrice:trainingPrice, trainingDuration:trainingDuration]"-->
-<!--                              out-map="[trainingId:trainingId]"/>-->
-<!--            </else>-->
-<!--        </actions>-->
-<!--        </service>-->
 
     <service verb="store" noun="MoquiTrainingUpdate">
         <description>Create or update MoquiTraining records based on trainingName or trainingId.</description>
 
         <in-parameters>
-            <!--            <parameter name="trainingId"/> &lt;!&ndash; Optional: ID to update an existing record &ndash;&gt;-->
-            <parameter name="trainingName" required="true"/> <!-- Required: Name of the training session -->
-            <parameter name="trainingDate" required="true"/> <!-- Required: Date of the training session -->
-            <auto-parameters entity-name="MoquiTraining" include="nonpk"/> <!-- Include other non-primary key fields -->
+            <parameter name="trainingName" required="true"/>
+            <parameter name="trainingDate" required="true"/>
+            <auto-parameters entity-name="MoquiTraining" include="nonpk"/>
         </in-parameters>
-
         <out-parameters>
-            <parameter name="trainingId"/> <!-- Output parameter for the ID of the training record -->
+            <parameter name="trainingId"/>
         </out-parameters>
 
         <actions>
+            <entity-find-one entity-name="MoquiTraining" value-field="existingRecord">
+                <field-map field-name="trainingName" from="trainingName"/>
+            </entity-find-one>
 
             <!-- If record exists, update it -->
             <if condition="existingRecord">
@@ -140,5 +90,197 @@
 
         </actions>
     </service>
+
+
+    <service verb="find" noun="Order">
+        <in-parameters>
+            <parameter name="orderId"/>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderInfo" required="true" />
+            <parameter name="orderItem"/>
+        </out-parameters>
+        <actions>
+            <entity-find-one entity-name="OrderItem" value-field="orderItem">
+            </entity-find-one>
+        </actions>
+    </service>
+
+
+<!--    <service verb="update" noun="Product">-->
+<!--        <in-parameters>-->
+<!--            <auto-parameters entity-name="Product">-->
+<!--            </auto-parameters>-->
+<!--        </in-parameters>-->
+<!--        <out-parameters>-->
+<!--            <parameter name="productId" />-->
+<!--        </out-parameters>-->
+<!--        <actions>-->
+
+<!--        </actions>-->
+<!--    </service>-->
+
+
+
+<!--    <service verb="update" noun="Party">-->
+<!--        <in-parameters>-->
+<!--            <auto-parameters entity-name="Party">-->
+<!--            </auto-parameters>-->
+<!--        </in-parameters>-->
+<!--        <out-parameters>-->
+<!--            <parameter name="partyId" />-->
+<!--        </out-parameters>-->
+<!--    </service>-->
+
+
+<!--    <service verb="update" noun="ContactMech">-->
+<!--        <in-parameters>-->
+<!--            <auto-parameters entity-name="ContactMech">-->
+<!--            </auto-parameters>-->
+<!--        </in-parameters>-->
+<!--        <out-parameters>-->
+<!--            <parameter name="contactMechId" />-->
+<!--        </out-parameters>-->
+<!--    </service>-->
+
+
+<!-- Order Header   -->
+    <service verb="create" noun="Order">
+        <in-parameters>
+            <auto-parameters entity-name="OrderHeader" include="nonpk" required="true">
+            </auto-parameters>
+            <parameter name="orderItems"  type="List" >
+                <parameter name="list" type="Map">
+                    <parameter name="productId" />
+                    <parameter name="quantity"/>
+                    <parameter name="status"/>
+                </parameter>
+            </parameter>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderId"/>
+        </out-parameters>
+        <actions>
+            <service-call name="create#OrderHeader" in-map="context" out-map="map"/>
+            <iterate list="orderItem" entry="item">
+                <set field = "item.orderId" from = "${map.orderId}"/>
+                <service-call name="create#OrderItem" in-map="item" />
+            </iterate>
+        </actions>
+    </service>
+
+    <service verb="create" noun="OrderItem" type="entity-auto">
+        <in-parameters>
+            <auto-parameters entity-name="OrderItem" include="nonpk" required="true">
+            </auto-parameters>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderItemSeqId"/>
+        </out-parameters>
+    </service>
+
+    <service verb="create" noun="OrderHeader" type="entity-auto">
+        <in-parameters>
+            <auto-parameters entity-name="OrderHeader" include="nonpk" required="true">
+            </auto-parameters>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderId"/>
+        </out-parameters>
+    </service>
+
+
+    <service verb="add" noun="ObjectItem" type="entity-auto">
+        <in-parameters>
+            <auto-parameters entity-name="OrderItem" include="nonpk">
+            </auto-parameters>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="orderSeqId" />
+        </out-parameters>
+    </service>
+
+
+    <service verb="delete" noun="Order" >
+        <in-parameters>
+            <parameter name="orderId" />
+        </in-parameters>
+        <actions>
+            <!-- Delete all OrderItem rows associated with the orderId -->
+            <service-call name="MoquiService.delete#OrderItem" in-map="context" />
+            <!-- Delete the OrderHeader -->
+            <service-call name="MoquiService.delete#OrderHeader" in-map="context" />
+        </actions>
+    </service>
+
+
+    <service verb="delete" noun="OrderHeader">
+        <in-parameters>
+            <parameter name="orderId" />
+        </in-parameters>
+        <actions>
+        </actions>
+    </service>
+
+
+    <service verb="delete" noun="OrderItem">
+        <in-parameters>
+            <parameter name="orderId" />
+        </in-parameters>
+        <actions>
+            <entity-delete-by-condition entity-name="orderItem">
+            </entity-delete-by-condition>
+
+            <!-- Iterate over the list of OrderItems and delete each -->
+            <iterate list="orderItems" entry="orderItem">
+                <service-call name="delete#OrderItem" in-map="orderItem" />
+            </iterate>
+        </actions>
+    </service>
+
+    <service verb="delete" noun="OrderItem" >
+        <in-parameters>
+            <parameter name="orderId" />
+        </in-parameters>
+        <actions>
+            <!-- Call entity-auto service to delete multiple records -->
+            <entity-find entity-name="OrderItem" list="orderItems">
+                <econdition field-name="orderId" from="orderId" />
+            </entity-find>
+            <iterate list="orderItems" entry="orderItem">
+                <service-call name="delete#OrderItem" in-map="orderItem" />
+            </iterate>
+        </actions>
+    </service>
+
+
+        <service verb="delete" noun="OrderHeader" >
+        <in-parameters>
+            <parameter name="orderId" />
+        </in-parameters>
+        <out-parameters>
+        </out-parameters>
+        <actions>
+            <service-call name="delete#OrderHeader" in-map="context" out-map="map"/>
+            <iterate list="orderItem" entry="item">
+                <service-call name="delete#OrderItem" in-map="orderId" out-map="context"/>
+            </iterate>
+        </actions>
+    </service>
+
+    <service verb="delete" noun="OrderItem">
+        <in-parameters>
+            <parameter name="orderId"/>
+        </in-parameters>
+        <actions>
+            <iterate list="orderItem" entry="item">
+
+            </iterate>
+
+        </actions>
+    </service>
+
+
+
 </services>
 

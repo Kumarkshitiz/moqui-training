@@ -91,7 +91,6 @@ tasks.register("omsSetup") {
     }
 }
 
-
 task copyDependencies { doLast {
     copy { from (configurations.runtimeClasspath - project(':framework').configurations.runtimeClasspath - project(':framework').jar.archivePath)
         into file(projectDir.absolutePath + '/lib') }
