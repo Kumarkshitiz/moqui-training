@@ -77,7 +77,7 @@
                     <set field="existingRecord.trainingName" from="trainingName"/>
                     <set field="existingRecord.trainingPrice" from="trainingPrice"/>
                     <set field="existingRecord.trainingDuration" from="trainingDuration"/>
-                    <!-- Update the existing record -->
+
                     <entity-update value-field="existingRecord"/>
 
                     <!-- Set output parameter to return updated training ID -->
@@ -92,55 +92,18 @@
     </service>
 
 
-    <service verb="find" noun="Order">
-        <in-parameters>
-            <parameter name="orderId"/>
-        </in-parameters>
-        <out-parameters>
-            <parameter name="orderInfo" required="true" />
-            <parameter name="orderItem"/>
-        </out-parameters>
-        <actions>
-            <entity-find-one entity-name="OrderItem" value-field="orderItem">
-            </entity-find-one>
-        </actions>
-    </service>
-
-
-<!--    <service verb="update" noun="Product">-->
+<!--    <service verb="find" noun="Order">-->
 <!--        <in-parameters>-->
-<!--            <auto-parameters entity-name="Product">-->
-<!--            </auto-parameters>-->
+<!--            <parameter name="orderId"/>-->
 <!--        </in-parameters>-->
 <!--        <out-parameters>-->
-<!--            <parameter name="productId" />-->
+<!--            <parameter name="orderInfo" required="true" />-->
+<!--            <parameter name="orderItem"/>-->
 <!--        </out-parameters>-->
 <!--        <actions>-->
-
+<!--            <entity-find-one entity-name="OrderItem" value-field="orderItem">-->
+<!--            </entity-find-one>-->
 <!--        </actions>-->
-<!--    </service>-->
-
-
-
-<!--    <service verb="update" noun="Party">-->
-<!--        <in-parameters>-->
-<!--            <auto-parameters entity-name="Party">-->
-<!--            </auto-parameters>-->
-<!--        </in-parameters>-->
-<!--        <out-parameters>-->
-<!--            <parameter name="partyId" />-->
-<!--        </out-parameters>-->
-<!--    </service>-->
-
-
-<!--    <service verb="update" noun="ContactMech">-->
-<!--        <in-parameters>-->
-<!--            <auto-parameters entity-name="ContactMech">-->
-<!--            </auto-parameters>-->
-<!--        </in-parameters>-->
-<!--        <out-parameters>-->
-<!--            <parameter name="contactMechId" />-->
-<!--        </out-parameters>-->
 <!--    </service>-->
 
 
@@ -190,9 +153,9 @@
     </service>
 
 
-    <service verb="add" noun="ObjectItem" type="entity-auto">
+    <service verb="add" noun="OrderItem" type="entity-auto">
         <in-parameters>
-            <auto-parameters entity-name="OrderItem" include="nonpk">
+            <auto-parameters entity-name="OrderItem">
             </auto-parameters>
         </in-parameters>
         <out-parameters>
@@ -201,85 +164,32 @@
     </service>
 
 
-    <service verb="delete" noun="Order" >
-        <in-parameters>
-            <parameter name="orderId" />
-        </in-parameters>
-        <actions>
-            <!-- Delete all OrderItem rows associated with the orderId -->
-            <service-call name="MoquiService.delete#OrderItem" in-map="context" />
-            <!-- Delete the OrderHeader -->
-            <service-call name="MoquiService.delete#OrderHeader" in-map="context" />
-        </actions>
-    </service>
 
-
+    <!--    Delete order-->
     <service verb="delete" noun="OrderHeader">
         <in-parameters>
-            <parameter name="orderId" />
-        </in-parameters>
-        <actions>
-        </actions>
-    </service>
-
-
-    <service verb="delete" noun="OrderItem">
-        <in-parameters>
-            <parameter name="orderId" />
-        </in-parameters>
-        <actions>
-            <entity-delete-by-condition entity-name="orderItem">
-            </entity-delete-by-condition>
-
-            <!-- Iterate over the list of OrderItems and delete each -->
-            <iterate list="orderItems" entry="orderItem">
-                <service-call name="delete#OrderItem" in-map="orderItem" />
-            </iterate>
-        </actions>
-    </service>
-
-    <service verb="delete" noun="OrderItem" >
-        <in-parameters>
-            <parameter name="orderId" />
-        </in-parameters>
-        <actions>
-            <!-- Call entity-auto service to delete multiple records -->
-            <entity-find entity-name="OrderItem" list="orderItems">
-                <econdition field-name="orderId" from="orderId" />
-            </entity-find>
-            <iterate list="orderItems" entry="orderItem">
-                <service-call name="delete#OrderItem" in-map="orderItem" />
-            </iterate>
-        </actions>
-    </service>
-
-
-        <service verb="delete" noun="OrderHeader" >
-        <in-parameters>
-            <parameter name="orderId" />
+            <parameter name="orderId" required="true"/>
         </in-parameters>
         <out-parameters>
+            <parameter name="param" default-value="Order Deleted"/>
         </out-parameters>
+
         <actions>
-            <service-call name="delete#OrderHeader" in-map="context" out-map="map"/>
-            <iterate list="orderItem" entry="item">
-                <service-call name="delete#OrderItem" in-map="orderId" out-map="context"/>
-            </iterate>
+            <entity-find-one entity-name="OrderHeader" value-field="orderList"/>
+            <if condition="orderList">
+                <then>
+                    <entity-delete-related value-field="orderList"   relationship-name="OrderHeader#tutorial.OrderItem"/>
+                    <entity-delete-by-condition entity-name="OrderHeader" >
+                        <econdition field-name="orderId"/>
+                    </entity-delete-by-condition>
+                    <set field="param" value="Order Deleted"/>
+                </then>
+                <else>
+                    <set field="param" value="Order not present in db"/>
+                </else>
+            </if>
         </actions>
     </service>
-
-    <service verb="delete" noun="OrderItem">
-        <in-parameters>
-            <parameter name="orderId"/>
-        </in-parameters>
-        <actions>
-            <iterate list="orderItem" entry="item">
-
-            </iterate>
-
-        </actions>
-    </service>
-
 
 
 </services>
